@@ -38,10 +38,8 @@ Documentation = "https://github.com/dshields/bibliomantic-mcp-server/blob/main/R
 [project.scripts]
 bibliomantic-server = "bibliomantic_server:main"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["*"]
-exclude = ["tests*", "docs*"]
+[tool.setuptools]
+py-modules = ["bibliomantic_server", "bibliomantic_fastmcp", "bibliomantic_fastmcp_ethical", "enhanced_bibliomantic_server", "enhanced_divination", "enhanced_iching_core", "divination", "iching"]
 
 [tool.setuptools.package-data]
 "*" = ["*.md", "*.txt", "*.json"]
