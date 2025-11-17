@@ -29,7 +29,7 @@ This server demonstrates how traditional wisdom systems can be thoughtfully inte
 
 ### From source
 ```bash
-git clone https://github.com/dshields/bibliomantic-mcp-server.git
+git clone https://github.com/d4nshields/bibliomantic-mcp-server.git
 cd bibliomantic-mcp-server
 pip install -e .
 ```
