@@ -30,10 +30,10 @@ classifiers = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/dshields/bibliomantic-mcp-server"
-Repository = "https://github.com/dshields/bibliomantic-mcp-server"
-Issues = "https://github.com/dshields/bibliomantic-mcp-server/issues"
-Documentation = "https://github.com/dshields/bibliomantic-mcp-server/blob/main/README.md"
+Homepage = "https://github.com/d4nshields/bibliomantic-mcp-server"
+Repository = "https://github.com/d4nshields/bibliomantic-mcp-server"
+Issues = "https://github.com/d4nshields/bibliomantic-mcp-server/issues"
+Documentation = "https://github.com/d4nshields/bibliomantic-mcp-server/blob/main/README.md"
 
 [project.scripts]
 bibliomantic-server = "bibliomantic_server:main"
