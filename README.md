@@ -13,7 +13,7 @@ This server demonstrates how traditional wisdom systems can be thoughtfully inte
 
 ## Features
 
-- **Traditional I Ching System**: All 64 hexagrams with authentic three-coin method simulation
+- **Traditional I Ching System**: All 64 hexagrams with the authentic three-coin method, including **changing lines** and **resulting hexagram** (full traditional reading)
 - **Bibliomantic Consultation**: Following Philip K. Dick's approach from "The Man in the High Castle"
 - **FastMCP Implementation**: Professional MCP compliance with tools, resources, and prompts
 - **Ethical Safeguards**: Clear disclaimers about entertainment/reflection purpose
@@ -64,8 +64,8 @@ Without this data, the server still runs with built-in content (short judgment/i
 
 ## Available Tools
 
-- **`i_ching_divination`** - Generate random hexagrams with traditional interpretations
-- **`bibliomantic_consultation`** - Full bibliomantic process with query augmentation  
+- **`i_ching_divination`** - Generate random hexagrams with traditional interpretations (includes changing lines when cast)
+- **`bibliomantic_consultation`** - Full bibliomantic process with query augmentation and full traditional content (judgment, image, changing lines, resulting hexagram)
 - **`get_hexagram_details`** - Look up specific hexagrams by number (1-64)
 - **`server_statistics`** - View system information and capabilities
 
@@ -99,7 +99,7 @@ Ask Claude:
 
 This implementation follows the divination method described in Philip K. Dick's *The Man in the High Castle*, where characters consult the I Ching for guidance on important decisions. The system:
 
-- Uses traditional I Ching methodology with three-coin tosses
+- Uses traditional I Ching methodology with three-coin tosses, including **changing lines** (old yin / old yang) and the **resulting hexagram**
 - Generates cryptographically secure randomness for authentic divination
 - Integrates ancient wisdom with modern AI capabilities
 - Maintains the philosophical and reflective aspects of bibliomancy
@@ -131,7 +131,7 @@ python bibliomantic_server.py
 
 Built with:
 - **FastMCP** - Official MCP Python SDK for professional compliance
-- **Traditional I Ching** - Complete 64-hexagram database with authentic interpretations
+- **Traditional I Ching** - Complete 64-hexagram database with judgment, image, changing-line texts, and trigram analysis; divination uses the full three-coin method (changing lines and resulting hexagram)
 - **Cryptographic randomness** - Secure three-coin simulation using Python's `secrets` module
 - **Type safety** - Full type hints with automatic JSON schema generation
 - **Ethical safeguards** - User-facing disclaimers in all responses
