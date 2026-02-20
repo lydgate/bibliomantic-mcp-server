@@ -17,35 +17,43 @@ __version__ = "1.0.0"
 __author__ = "Dan Shields"
 __description__ = "Bibliomantic MCP Server with I Ching divination and Claude AI integration"
 
-# Core exports for package users
+# Core exports for package users (I Ching and divination are always available; enhanced-only)
 try:
     from .iching import IChing, divine_hexagram
     from .divination import BiblioManticDiviner, augment_query_with_divination, perform_divination
-    from .claude_client import ClaudeClient, BiblioManticClaudeIntegration, ClaudeResponse
-    from .server import BiblioManticMCPServer, create_mcp_server
 except ImportError:
-    # Fallback for when running modules directly
     from iching import IChing, divine_hexagram
     from divination import BiblioManticDiviner, augment_query_with_divination, perform_divination
-    from claude_client import ClaudeClient, BiblioManticClaudeIntegration, ClaudeResponse
-    from server import BiblioManticMCPServer, create_mcp_server
+
+# Optional integrations (may not be present in this tree)
+try:
+    try:
+        from .claude_client import ClaudeClient, BiblioManticClaudeIntegration, ClaudeResponse
+    except ImportError:
+        from claude_client import ClaudeClient, BiblioManticClaudeIntegration, ClaudeResponse
+except ImportError:
+    ClaudeClient = None  # type: ignore
+    BiblioManticClaudeIntegration = None  # type: ignore
+    ClaudeResponse = None  # type: ignore
+
+try:
+    try:
+        from .server import BiblioManticMCPServer, create_mcp_server
+    except ImportError:
+        from server import BiblioManticMCPServer, create_mcp_server
+except ImportError:
+    BiblioManticMCPServer = None  # type: ignore
+    create_mcp_server = None  # type: ignore
 
 __all__ = [
-    # I Ching system
     "IChing",
     "divine_hexagram",
-    
-    # Divination system
-    "BiblioManticDiviner", 
+    "BiblioManticDiviner",
     "augment_query_with_divination",
     "perform_divination",
-    
-    # Claude integration
     "ClaudeClient",
-    "BiblioManticClaudeIntegration", 
+    "BiblioManticClaudeIntegration",
     "ClaudeResponse",
-    
-    # MCP Server
     "BiblioManticMCPServer",
     "create_mcp_server",
 ]

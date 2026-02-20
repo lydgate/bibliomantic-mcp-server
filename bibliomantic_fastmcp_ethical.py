@@ -13,16 +13,15 @@ from typing import Optional
 # Import the official FastMCP framework
 from mcp.server.fastmcp import FastMCP
 
-# Import our bibliomantic components
+# Import enhanced bibliomantic components (traditional three-coin with changing lines)
 try:
-    from divination import BiblioManticDiviner
-    from iching import IChing
+    from enhanced_divination import EnhancedBiblioManticDiviner
+    from enhanced_iching_core import IChingAdapter
 except ImportError:
-    # Fallback for direct execution
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from divination import BiblioManticDiviner
-    from iching import IChing
+    from enhanced_divination import EnhancedBiblioManticDiviner
+    from enhanced_iching_core import IChingAdapter
 
 # Configure logging to stderr (FastMCP handles stdout for protocol)
 logging.basicConfig(
@@ -38,11 +37,11 @@ mcp = FastMCP(
     dependencies=["secrets"]  # For cryptographically secure randomness
 )
 
-# Initialize our divination components
-diviner = BiblioManticDiviner()
-iching = IChing()
+# Initialize enhanced divination (changing lines, secondary hexagram)
+diviner = EnhancedBiblioManticDiviner()
+iching = IChingAdapter()
 
-logger.info("Bibliomantic FastMCP Server initialized with ethical safeguards")
+logger.info("Bibliomantic FastMCP Server initialized with enhanced I Ching and ethical safeguards")
 
 # Ethical disclaimer that appears in user-facing responses
 ETHICAL_DISCLAIMER = """
@@ -84,6 +83,8 @@ def i_ching_divination(query: Optional[str] = None) -> str:
 
 {ETHICAL_DISCLAIMER}"""
 
+        if result.get("changing_lines"):
+            response += f"\n\n**Changing Lines:** {', '.join(map(str, result['changing_lines']))}"
         if query:
             response += f"\n\n**Your Question:** {query}"
             response += f"\n\n**Guidance:** Consider how this hexagram's wisdom might offer perspective on your situation, while remembering this is a tool for reflection, not prediction."

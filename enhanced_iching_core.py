@@ -514,48 +514,35 @@ class EnhancedIChing:
         else:
             return "general"
 
-# Backward compatibility adapter
+# Adapter providing the same interface as the old basic IChing (enhanced-only)
 class IChingAdapter:
-    """Adapter that provides both simple and enhanced interfaces"""
-    
+    """Adapter that provides the enhanced I Ching interface (changing lines, etc.)."""
+
     def __init__(self, use_enhanced: bool = True):
-        self.enhanced_engine = EnhancedIChing() if use_enhanced else None
-        self.use_enhanced = use_enhanced
-    
+        self.enhanced_engine = EnhancedIChing()
+        self.use_enhanced = True  # Ignored; kept for API compatibility
+
     def generate_hexagram_by_coins(self) -> Tuple[int, str, str]:
-        """Maintain backward compatibility with existing interface"""
-        if self.use_enhanced and self.enhanced_engine:
-            result = self.enhanced_engine.generate_enhanced_divination()
-            hexagram = result['primary_hexagram']
-            return hexagram.number, hexagram.english_name, hexagram.general_meaning
-        else:
-            # Fallback to basic generation
-            return self._basic_generation()
-    
+        """Generate hexagram using traditional three-coin method with changing lines."""
+        result = self.enhanced_engine.generate_enhanced_divination()
+        hexagram = result['primary_hexagram']
+        return hexagram.number, hexagram.english_name, hexagram.general_meaning
+
     def get_hexagram_by_number(self, number: int) -> Tuple[str, str]:
-        """Maintain backward compatibility"""
-        if self.use_enhanced and self.enhanced_engine:
-            hexagram = self.enhanced_engine.hexagrams.get(number)
-            if hexagram:
-                return hexagram.english_name, hexagram.general_meaning
-        
+        """Look up hexagram by number (1-64)."""
+        hexagram = self.enhanced_engine.hexagrams.get(number)
+        if hexagram:
+            return hexagram.english_name, hexagram.general_meaning
         return f"Hexagram {number}", "Traditional interpretation"
-    
+
     def format_divination_text(self, number: int, name: str, interpretation: str) -> str:
-        """Maintain backward compatibility"""
+        """Format divination for display."""
         return f"I Ching Hexagram {number} - {name}: {interpretation}"
-    
+
     def enhanced_consultation(self, query: str) -> Dict[str, Any]:
-        """Enhanced consultation method"""
-        if self.enhanced_engine:
-            return self.enhanced_engine.generate_enhanced_divination(query)
-        else:
-            return {"error": "Enhanced mode not available"}
-    
-    def _basic_generation(self) -> Tuple[int, str, str]:
-        """Basic fallback generation"""
-        number = secrets.randbelow(64) + 1
-        return number, f"Hexagram {number}", "Traditional interpretation"
+        """Enhanced consultation with changing lines and contextual interpretation."""
+        return self.enhanced_engine.generate_enhanced_divination(query)
+
 
 # Global instance for backward compatibility
-enhanced_iching = IChingAdapter(use_enhanced=True)
+enhanced_iching = IChingAdapter()

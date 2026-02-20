@@ -16,16 +16,15 @@ from typing import Optional
 # Import the official FastMCP framework
 from mcp.server.fastmcp import FastMCP
 
-# Import our bibliomantic components
+# Import enhanced bibliomantic components (traditional three-coin with changing lines)
 try:
-    from divination import BiblioManticDiviner
-    from iching import IChing
+    from enhanced_divination import EnhancedBiblioManticDiviner
+    from enhanced_iching_core import IChingAdapter
 except ImportError:
-    # Fallback for direct execution
     import os
     sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-    from divination import BiblioManticDiviner
-    from iching import IChing
+    from enhanced_divination import EnhancedBiblioManticDiviner
+    from enhanced_iching_core import IChingAdapter
 
 # Configure logging to stderr (FastMCP handles stdout for protocol)
 logging.basicConfig(
@@ -41,11 +40,11 @@ mcp = FastMCP(
     dependencies=["secrets"]  # For cryptographically secure randomness
 )
 
-# Initialize our divination components
-diviner = BiblioManticDiviner()
-iching = IChing()
+# Initialize enhanced divination (changing lines, secondary hexagram)
+diviner = EnhancedBiblioManticDiviner()
+iching = IChingAdapter()
 
-logger.info("Bibliomantic FastMCP Server initialized")
+logger.info("Bibliomantic FastMCP Server initialized with enhanced I Ching")
 
 
 @mcp.tool()
@@ -73,9 +72,10 @@ def i_ching_divination(query: Optional[str] = None) -> str:
 
 {result['interpretation']}
 
-*Generated using traditional three-coin method with cryptographically secure randomness.*
-*This follows the authentic I Ching methodology as described in ancient Chinese divination.*"""
+*Generated using traditional three-coin method with cryptographically secure randomness.*"""
 
+        if result.get("changing_lines"):
+            response += f"\n\n**Changing Lines:** {', '.join(map(str, result['changing_lines']))}"
         if query:
             response += f"\n\n**Your Question:** {query}"
             response += f"\n\n**Guidance:** Consider how this hexagram's wisdom applies to your specific situation."

@@ -13,17 +13,9 @@ from typing import Optional
 # Import the official FastMCP framework
 from mcp.server.fastmcp import FastMCP
 
-# Import enhanced components (with fallback)
-try:
-    from enhanced_divination import EnhancedBiblioManticDiviner
-    from enhanced_iching_core import IChingAdapter
-    ENHANCED_MODE = True
-except ImportError:
-    # Fallback to original implementation
-    from divination import BiblioManticDiviner as EnhancedBiblioManticDiviner
-    from iching import IChing as IChingAdapter
-    ENHANCED_MODE = False
-    print("Running in compatibility mode", file=sys.stderr)
+# Import enhanced components (traditional three-coin with changing lines)
+from enhanced_divination import EnhancedBiblioManticDiviner
+from enhanced_iching_core import IChingAdapter
 
 # Configure logging
 logging.basicConfig(
@@ -39,15 +31,10 @@ mcp = FastMCP(
     dependencies=["secrets"]
 )
 
-# Initialize components
-if ENHANCED_MODE:
-    diviner = EnhancedBiblioManticDiviner(use_enhanced=True)
-    iching = IChingAdapter(use_enhanced=True)
-    logger.info("Enhanced Bibliomantic FastMCP Server initialized with full traditional content")
-else:
-    diviner = EnhancedBiblioManticDiviner()
-    iching = IChingAdapter()
-    logger.info("Bibliomantic FastMCP Server initialized in compatibility mode")
+# Initialize enhanced components
+diviner = EnhancedBiblioManticDiviner()
+iching = IChingAdapter()
+logger.info("Enhanced Bibliomantic FastMCP Server initialized with full traditional content")
 
 # Ethical disclaimers (unchanged)
 ETHICAL_DISCLAIMER = """
@@ -86,15 +73,11 @@ def i_ching_divination(query: Optional[str] = None) -> str:
 
         if query:
             response += f"\n\n**Your Question:** {query}"
-            if ENHANCED_MODE and hasattr(diviner, 'enhanced_engine') and diviner.enhanced_engine:
-                # Add contextual guidance
-                context = diviner.enhanced_engine.infer_context_from_query(query)
-                contextual_guidance = diviner.enhanced_engine.get_contextual_interpretation(
-                    result['hexagram_number'], context
-                )
-                response += f"\n\n**Contextual Guidance:** {contextual_guidance}"
-            else:
-                response += f"\n\n**Guidance:** Consider how this hexagram's wisdom might offer perspective on your situation."
+            context = diviner.enhanced_engine.infer_context_from_query(query)
+            contextual_guidance = diviner.enhanced_engine.get_contextual_interpretation(
+                result['hexagram_number'], context
+            )
+            response += f"\n\n**Contextual Guidance:** {contextual_guidance}"
         
         logger.info(f"Generated enhanced hexagram {result['hexagram_number']} - {result['hexagram_name']}")
         return response
@@ -114,25 +97,18 @@ def bibliomantic_consultation(query: str) -> str:
     if not query.strip():
         return f"Please provide a question for bibliomantic consultation.\n\n{BRIEF_DISCLAIMER}"
     
-    # Use enhanced consultation if available
-    if ENHANCED_MODE and hasattr(diviner, 'perform_enhanced_consultation'):
-        try:
-            enhanced_result = diviner.perform_enhanced_consultation(query)
-            
-            # Add bibliomantic context and disclaimer
-            enhanced_result += f"\n\n**How to Use This Guidance:**\n"
-            enhanced_result += "Consider how this ancient perspective might offer new ways of thinking about your situation. "
-            enhanced_result += "The value lies not in prediction, but in the fresh viewpoints that can emerge from engaging "
-            enhanced_result += "with different frameworks of understanding.\n\n"
-            enhanced_result += ETHICAL_DISCLAIMER
-            
-            logger.info("Completed enhanced bibliomantic consultation")
-            return enhanced_result
-            
-        except Exception as e:
-            logger.error(f"Enhanced consultation failed, falling back: {str(e)}")
-    
-    # Fallback to original method (backward compatibility)
+    try:
+        enhanced_result = diviner.perform_enhanced_consultation(query)
+        enhanced_result += f"\n\n**How to Use This Guidance:**\n"
+        enhanced_result += "Consider how this ancient perspective might offer new ways of thinking about your situation. "
+        enhanced_result += "The value lies not in prediction, but in the fresh viewpoints that can emerge from engaging "
+        enhanced_result += "with different frameworks of understanding.\n\n"
+        enhanced_result += ETHICAL_DISCLAIMER
+        logger.info("Completed enhanced bibliomantic consultation")
+        return enhanced_result
+    except Exception as e:
+        logger.error(f"Enhanced consultation failed, falling back: {str(e)}")
+
     augmented_query, divination_info = diviner.divine_query_augmentation(query)
     
     if "error" in divination_info:
@@ -170,10 +146,8 @@ def get_hexagram_details(hexagram_number: int) -> str:
     if not isinstance(hexagram_number, int) or not (1 <= hexagram_number <= 64):
         return f"Please provide a valid hexagram number between 1 and 64.\n\n{BRIEF_DISCLAIMER}"
     
-    # Use enhanced details if available
-    if ENHANCED_MODE and hasattr(iching, 'enhanced_engine') and iching.enhanced_engine:
-        hexagram = iching.enhanced_engine.hexagrams.get(hexagram_number)
-        if hexagram:
+    hexagram = iching.enhanced_engine.hexagrams.get(hexagram_number)
+    if hexagram:
             symbol = getattr(hexagram, "hex_unicode", None) or hexagram.unicode_symbol
             pinyin_line = f" (*Pinyin:* {hexagram.pinyin})\n\n" if getattr(hexagram, "pinyin", None) else "\n\n"
             response = f"""📖 **Hexagram {hexagram.number}: {hexagram.english_name}**
@@ -227,14 +201,11 @@ This information is provided for learning about ancient Chinese philosophy and w
 Philip K. Dick's "The Man in the High Castle" explores how people create meaning through engagement with such traditional systems, highlighting the human tendency to find significance in patterns.
 
 {BRIEF_DISCLAIMER}"""
-            
             logger.info(f"Retrieved enhanced details for hexagram {hexagram_number} - {hexagram.english_name}")
             return response
-    
-    # Fallback to basic method
+
     name, interpretation = iching.get_hexagram_by_number(hexagram_number)
-    
-    response = f"""📖 **Hexagram {hexagram_number}: {name}**
+    return f"""📖 **Hexagram {hexagram_number}: {name}**
 
 **Traditional Interpretation:**
 {interpretation}
@@ -249,9 +220,6 @@ This information is provided for learning about ancient Chinese philosophy and w
 Philip K. Dick's "The Man in the High Castle" explores how people create meaning through engagement with such traditional systems, highlighting the human tendency to find significance in patterns.
 
 {BRIEF_DISCLAIMER}"""
-    
-    logger.info(f"Retrieved basic details for hexagram {hexagram_number} - {name}")
-    return response
 
 # Resource handlers (enhanced but backward compatible)
 @mcp.resource("hexagram://{number}")
@@ -262,10 +230,9 @@ def get_hexagram_resource(number: str) -> str:
         if not (1 <= hexagram_num <= 64):
             return "Invalid hexagram number. Must be between 1 and 64."
         
-        if ENHANCED_MODE and hasattr(iching, 'enhanced_engine') and iching.enhanced_engine:
-            hexagram = iching.enhanced_engine.hexagrams.get(hexagram_num)
-            if hexagram:
-                return f"""I Ching Hexagram {hexagram.number}: {hexagram.english_name}
+        hexagram = iching.enhanced_engine.hexagrams.get(hexagram_num)
+        if hexagram:
+            return f"""I Ching Hexagram {hexagram.number}: {hexagram.english_name}
 
 Chinese Name: {hexagram.chinese_name} {hexagram.unicode_symbol}
 
@@ -283,8 +250,6 @@ Purpose: Philosophical reflection and pattern recognition
 Literary Context: Featured in Philip K. Dick's "The Man in the High Castle"
 
 Note: This represents traditional wisdom for contemplation, not supernatural prediction."""
-        
-        # Fallback
         name, interpretation = iching.get_hexagram_by_number(hexagram_num)
         return f"""I Ching Hexagram {hexagram_num}: {name}
 
@@ -307,17 +272,12 @@ def get_iching_database() -> str:
     """Enhanced I Ching database resource"""
     hexagram_list = []
     
-    if ENHANCED_MODE and hasattr(iching, 'enhanced_engine') and iching.enhanced_engine:
-        for i in range(1, 65):
-            hexagram = iching.enhanced_engine.hexagrams.get(i)
-            if hexagram:
-                hexagram_list.append(f"{i:2d}. {hexagram.english_name} ({hexagram.chinese_name} {hexagram.unicode_symbol})")
-            else:
-                hexagram_list.append(f"{i:2d}. Hexagram {i}")
-    else:
-        for i in range(1, 65):
-            name, _ = iching.get_hexagram_by_number(i)
-            hexagram_list.append(f"{i:2d}. {name}")
+    for i in range(1, 65):
+        hexagram = iching.enhanced_engine.hexagrams.get(i)
+        if hexagram:
+            hexagram_list.append(f"{i:2d}. {hexagram.english_name} ({hexagram.chinese_name} {hexagram.unicode_symbol})")
+        else:
+            hexagram_list.append(f"{i:2d}. Hexagram {i}")
     
     return f"""I Ching Complete Enhanced Database - 64 Hexagrams
 
@@ -404,23 +364,20 @@ def server_statistics() -> str:
     """Enhanced server statistics"""
     stats = diviner.get_divination_statistics()
     
-    enhanced_features = ""
-    if ENHANCED_MODE:
-        enhanced_features = """
+    enhanced_features = """
 **Enhanced Features:**
 - Traditional Chinese names and Unicode symbols
-- Complete judgment and image texts  
+- Complete judgment and image texts
 - Changing line interpretations
 - Trigram analysis and interactions
 - Contextual interpretations (career, relationships, creative, business, personal)
 - Traditional and modern commentary
 - King Wen sequence binary mapping
 - Context-aware query analysis"""
-    
+
     return f"""📊 **Enhanced Bibliomantic Server Statistics**
 
 **System Status:** {stats['system_status'].title()}
-**Enhanced Mode:** {"Active" if ENHANCED_MODE else "Compatibility Mode"}
 **Total Hexagrams:** {stats['total_hexagrams']}
 **Divination Method:** {stats['divination_method']}
 **Randomness Source:** {stats['randomness_source']}

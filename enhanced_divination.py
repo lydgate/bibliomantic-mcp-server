@@ -14,70 +14,47 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class EnhancedBiblioManticDiviner:
-    """Enhanced divination system with rich traditional content"""
-    
+    """Enhanced divination system with rich traditional content (changing lines, secondary hexagram)."""
+
     def __init__(self, use_enhanced: bool = True):
-        self.iching = IChingAdapter(use_enhanced=use_enhanced)
-        self.enhanced_engine = EnhancedIChing() if use_enhanced else None
-        self.use_enhanced = use_enhanced
+        self.iching = IChingAdapter()
+        self.enhanced_engine = EnhancedIChing()
+        self.use_enhanced = True
         logger.info("Enhanced BiblioMantic Divination System initialized")
     
     def divine_query_augmentation(self, original_query: str) -> Tuple[str, dict]:
-        """Enhanced query augmentation with richer content"""
+        """Enhanced query augmentation with changing lines and contextual interpretation."""
         try:
-            if self.use_enhanced and self.enhanced_engine:
-                # Use enhanced divination
-                result = self.enhanced_engine.generate_enhanced_divination(original_query)
-                hexagram = result['primary_hexagram']
-                
-                divination_info = {
-                    "hexagram_number": hexagram.number,
-                    "hexagram_name": hexagram.english_name,
-                    "interpretation": hexagram.general_meaning,
-                    "method": "enhanced_three_coin_traditional",
-                    "bibliomantic_approach": "dick_high_castle_enhanced",
-                    "changing_lines": result.get('changing_lines', []),
-                    "contextual": True
-                }
-                
-                # Create enhanced wisdom text with context awareness
-                context = self.enhanced_engine.infer_context_from_query(original_query)
-                contextual_interpretation = self.enhanced_engine.get_contextual_interpretation(
-                    hexagram.number, context
+            result = self.enhanced_engine.generate_enhanced_divination(original_query)
+            hexagram = result['primary_hexagram']
+
+            divination_info = {
+                "hexagram_number": hexagram.number,
+                "hexagram_name": hexagram.english_name,
+                "interpretation": hexagram.general_meaning,
+                "method": "enhanced_three_coin_traditional",
+                "bibliomantic_approach": "dick_high_castle_enhanced",
+                "changing_lines": result.get('changing_lines', []),
+                "contextual": True
+            }
+
+            context = self.enhanced_engine.infer_context_from_query(original_query)
+            contextual_interpretation = self.enhanced_engine.get_contextual_interpretation(
+                hexagram.number, context
+            )
+
+            wisdom_text = f"I Ching Hexagram {hexagram.number} - {hexagram.english_name} ({hexagram.chinese_name} {hexagram.unicode_symbol}): {contextual_interpretation}"
+
+            if result.get('changing_lines'):
+                line_guidance = self.enhanced_engine.get_changing_line_guidance(
+                    hexagram.number, result['changing_lines']
                 )
-                
-                wisdom_text = f"I Ching Hexagram {hexagram.number} - {hexagram.english_name} ({hexagram.chinese_name} {hexagram.unicode_symbol}): {contextual_interpretation}"
-                
-                # Add changing line guidance if present
-                if result.get('changing_lines'):
-                    line_guidance = self.enhanced_engine.get_changing_line_guidance(
-                        hexagram.number, result['changing_lines']
-                    )
-                    wisdom_text += f" Changing lines: {'; '.join(line_guidance)}"
-                
-            else:
-                # Fallback to basic divination
-                hexagram_number, hexagram_name, interpretation = self.iching.generate_hexagram_by_coins()
-                
-                divination_info = {
-                    "hexagram_number": hexagram_number,
-                    "hexagram_name": hexagram_name,
-                    "interpretation": interpretation,
-                    "method": "three_coin_traditional",
-                    "bibliomantic_approach": "dick_high_castle"
-                }
-                
-                wisdom_text = self.iching.format_divination_text(
-                    hexagram_number, hexagram_name, interpretation
-                )
-            
-            # Augment the original query with enhanced wisdom
+                wisdom_text += f" Changing lines: {'; '.join(line_guidance)}"
+
             augmented_query = self._integrate_wisdom_with_query(wisdom_text, original_query)
-            
             logger.info(f"Enhanced divination performed: Hexagram {divination_info['hexagram_number']} - {divination_info['hexagram_name']}")
-            
             return augmented_query, divination_info
-            
+
         except Exception as e:
             logger.error(f"Enhanced divination failed: {str(e)}")
             return original_query, {"error": str(e), "fallback": True}
@@ -95,36 +72,19 @@ class EnhancedBiblioManticDiviner:
         )
     
     def perform_simple_divination(self) -> dict:
-        """Enhanced simple divination with backward compatibility"""
+        """Perform divination with traditional three-coin method and changing lines."""
         try:
-            if self.use_enhanced and self.enhanced_engine:
-                result = self.enhanced_engine.generate_enhanced_divination()
-                hexagram = result['primary_hexagram']
-                
-                return {
-                    "success": True,
-                    "hexagram_number": hexagram.number,
-                    "hexagram_name": hexagram.english_name,
-                    "interpretation": hexagram.general_meaning,
-                    "formatted_text": f"I Ching Hexagram {hexagram.number} - {hexagram.english_name}: {hexagram.general_meaning}",
-                    "enhanced": True,
-                    "changing_lines": result.get('changing_lines', [])
-                }
-            else:
-                # Fallback to basic
-                hexagram_number, hexagram_name, interpretation = self.iching.generate_hexagram_by_coins()
-                
-                return {
-                    "success": True,
-                    "hexagram_number": hexagram_number,
-                    "hexagram_name": hexagram_name,
-                    "interpretation": interpretation,
-                    "formatted_text": self.iching.format_divination_text(
-                        hexagram_number, hexagram_name, interpretation
-                    ),
-                    "enhanced": False
-                }
-                
+            result = self.enhanced_engine.generate_enhanced_divination()
+            hexagram = result['primary_hexagram']
+            return {
+                "success": True,
+                "hexagram_number": hexagram.number,
+                "hexagram_name": hexagram.english_name,
+                "interpretation": hexagram.general_meaning,
+                "formatted_text": f"I Ching Hexagram {hexagram.number} - {hexagram.english_name}: {hexagram.general_meaning}",
+                "enhanced": True,
+                "changing_lines": result.get('changing_lines', [])
+            }
         except Exception as e:
             logger.error(f"Enhanced simple divination failed: {str(e)}")
             return {
@@ -134,10 +94,7 @@ class EnhancedBiblioManticDiviner:
             }
     
     def perform_enhanced_consultation(self, query: str) -> str:
-        """New enhanced consultation method with full traditional content"""
-        if not self.use_enhanced or not self.enhanced_engine:
-            return "Enhanced mode not available"
-        
+        """Enhanced consultation with full traditional content (judgment, image, changing lines)."""
         try:
             result = self.enhanced_engine.generate_enhanced_divination(query)
             return self._format_enhanced_consultation(result, query)
@@ -230,26 +187,20 @@ class EnhancedBiblioManticDiviner:
         return True
     
     def get_divination_statistics(self) -> dict:
-        """Enhanced statistics"""
-        base_stats = {
+        """Enhanced statistics (changing lines, trigrams, etc.)."""
+        return {
             "total_hexagrams": 64,
             "divination_method": "Enhanced Traditional I Ching three-coin method with changing lines",
             "randomness_source": "Python secrets module (cryptographically secure)",
             "bibliomantic_approach": "Philip K. Dick - The Man in the High Castle style (Enhanced)",
-            "system_status": "operational"
+            "system_status": "operational",
+            "enhanced_features": True,
+            "changing_lines": True,
+            "trigram_analysis": True,
+            "contextual_interpretations": True,
+            "traditional_commentaries": True,
+            "unicode_symbols": True
         }
-        
-        if self.use_enhanced:
-            base_stats.update({
-                "enhanced_features": True,
-                "changing_lines": True,
-                "trigram_analysis": True,
-                "contextual_interpretations": True,
-                "traditional_commentaries": True,
-                "unicode_symbols": True
-            })
-        
-        return base_stats
 
 # Backward compatibility functions
 def augment_query_with_divination(query: str) -> Tuple[str, dict]:
