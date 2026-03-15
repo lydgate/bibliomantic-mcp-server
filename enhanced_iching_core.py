@@ -425,24 +425,29 @@ class EnhancedIChing:
         coin_tosses = []
         hexagram_lines = []
         changing_lines = []
-        
+        line_values = []  # Store raw values: 6 (old yin), 7 (young yang), 8 (young yin), 9 (old yang)
+
         # Traditional three-coin method
         for line_pos in range(6):
             tosses = [secrets.choice(['heads', 'tails']) for _ in range(3)]
             coin_tosses.append(tosses)
-            
+
             heads_count = tosses.count('heads')
-            
+
             if heads_count == 3:  # Old Yang - changing yang line
                 hexagram_lines.append(1)
                 changing_lines.append(line_pos + 1)
+                line_values.append(9)
             elif heads_count == 2:  # Young Yang - stable yang
                 hexagram_lines.append(1)
+                line_values.append(7)
             elif heads_count == 1:  # Young Yin - stable yin
                 hexagram_lines.append(0)
+                line_values.append(8)
             else:  # heads_count == 0, Old Yin - changing yin line
                 hexagram_lines.append(0)
                 changing_lines.append(line_pos + 1)
+                line_values.append(6)
         
         # Calculate hexagram number from binary pattern (bottom to top)
         binary_str = ''.join(str(line) for line in reversed(hexagram_lines))
@@ -466,6 +471,7 @@ class EnhancedIChing:
             'primary_hexagram': hexagram,
             'changing_lines': changing_lines,
             'resulting_hexagram': resulting_hexagram,
+            'line_values': line_values,
             'coin_tosses': coin_tosses,
             'query': query
         }

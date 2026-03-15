@@ -106,6 +106,7 @@ class EnhancedBiblioManticDiviner:
         """Format enhanced consultation with full traditional elements"""
         hexagram = divination_result['primary_hexagram']
         changing_lines = divination_result.get('changing_lines', [])
+        line_values = divination_result.get('line_values', [])
         resulting_hexagram = divination_result.get('resulting_hexagram')
         
         # Infer context for targeted guidance
@@ -141,11 +142,27 @@ class EnhancedBiblioManticDiviner:
             line_texts = getattr(hexagram, "changing_line_texts", None)
             line_comments = getattr(hexagram, "changing_line_comments", None)
             for line_num in changing_lines:
+                # Determine line type from casting values (6 = old yin, 9 = old yang)
+                line_val = line_values[line_num - 1] if line_values and line_num <= len(line_values) else None
+                if line_val == 6:
+                    line_type = "Six (changing yin)"
+                elif line_val == 9:
+                    line_type = "Nine (changing yang)"
+                else:
+                    line_type = "changing"
                 if line_texts and line_num in line_texts and line_comments and line_num in line_comments:
-                    result += f"• **Line {line_num}:** *{line_texts[line_num]}*\n\n  {line_comments[line_num]}\n\n"
+                    result += f"• **Line {line_num} — {line_type}:** *{line_texts[line_num]}*\n\n  {line_comments[line_num]}\n\n"
                 else:
                     guidance = self.enhanced_engine.get_changing_line_guidance(hexagram.number, [line_num])
-                    result += f"• {guidance[0]}\n" if guidance else f"• Line {line_num}: Traditional interpretation\n"
+                    if guidance:
+                        # Replace the plain "Line N:" prefix with the typed version
+                        text = guidance[0]
+                        prefix = f"Line {line_num}: "
+                        if text.startswith(prefix):
+                            text = text[len(prefix):]
+                        result += f"• **Line {line_num} — {line_type}:** {text}\n"
+                    else:
+                        result += f"• **Line {line_num} — {line_type}:** Traditional interpretation\n"
             result += "\n"
             
             if resulting_hexagram:
