@@ -102,6 +102,47 @@ class EnhancedBiblioManticDiviner:
             logger.error(f"Enhanced consultation failed: {str(e)}")
             return f"Enhanced consultation failed: {str(e)}"
     
+    def _prevailing_line(self, changing_lines: list, line_values: list) -> str:
+        """Return a description of the prevailing line per traditional rules."""
+        n = len(changing_lines)
+        if n == 0:
+            return "None — read the primary hexagram as a whole."
+        if n == 1:
+            ln = changing_lines[0]
+            return f"Line {ln} — the single changing line governs the reading."
+        if n == 2:
+            a, b = sorted(changing_lines)
+            type_a = line_values[a - 1] if line_values and a <= len(line_values) else None
+            type_b = line_values[b - 1] if line_values and b <= len(line_values) else None
+            if type_a == type_b:  # both Six or both Nine
+                return f"Line {b} (upper of the two changing lines — same type)."
+            else:
+                # The Six line (old yin, value 6) prevails
+                six_line = a if type_a == 6 else b
+                return f"Line {six_line} — the Six (old yin) line prevails when types differ."
+        if n == 3:
+            mid = sorted(changing_lines)[1]
+            return f"Line {mid} (middle of the three changing lines)."
+        if n == 4:
+            all_lines = list(range(1, 7))
+            non_changing = [l for l in all_lines if l not in changing_lines]
+            upper_non = max(non_changing)
+            return f"Line {upper_non} — upper non-changing line (of four changing)."
+        if n == 5:
+            all_lines = list(range(1, 7))
+            non_changing = [l for l in all_lines if l not in changing_lines]
+            only_non = non_changing[0]
+            return f"Line {only_non} — the sole non-changing line governs."
+        if n == 6:
+            all_six = all(v == 6 for v in line_values) if line_values else False
+            all_nine = all(v == 9 for v in line_values) if line_values else False
+            if all_six:
+                return "All Six — read both the Cast Hexagram and the Transformed Hexagram."
+            if all_nine:
+                return "All Nine — read both the Cast Hexagram and the Transformed Hexagram."
+            return "None — read the transformed hexagram only (no single line governs)."
+        return "None."
+
     def _format_enhanced_consultation(self, divination_result: Dict[str, Any], query: str) -> str:
         """Format enhanced consultation with full traditional elements"""
         hexagram = divination_result['primary_hexagram']
@@ -139,6 +180,8 @@ class EnhancedBiblioManticDiviner:
         # Changing lines guidance if present (use text/comments split when available)
         if changing_lines:
             result += f"**Changing Lines:** {', '.join(map(str, changing_lines))}\n\n"
+            prevailing = self._prevailing_line(changing_lines, line_values)
+            result += f"**Prevailing Line:** {prevailing}\n\n"
             line_texts = getattr(hexagram, "changing_line_texts", None)
             line_comments = getattr(hexagram, "changing_line_comments", None)
             for line_num in changing_lines:
