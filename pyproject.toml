@@ -12,6 +12,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "mcp[cli]>=1.9.0",
+    "uvicorn>=0.30.0",
 ]
 keywords = ["mcp", "model-context-protocol", "iching", "divination", "philip-k-dick", "bibliomancy", "ai", "claude"]
 classifiers = [
